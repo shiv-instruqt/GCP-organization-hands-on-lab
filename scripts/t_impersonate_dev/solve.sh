@@ -13,5 +13,15 @@ case "$CHECK" in
     log_note 0 "$DEV_ALICE" "gcloud storage ls gs://$DEV_BUCKET --impersonate-service-account=$DEV_ALICE   # (auto-solved)" ;;
   impersonated_denied)
     log_note 1 "$DEV_ALICE" "gcloud storage rm gs://$DEV_BUCKET/hello.txt --impersonate-service-account=$DEV_ALICE   # (auto-solved)" ;;
+  inherit_denied)
+    gdev storage buckets describe "gs://$DEV_PROJECT-reports" >/dev/null 2>&1 || \
+      gdev storage buckets create "gs://$DEV_PROJECT-reports" --location="$LAB_REGION" --uniform-bucket-level-access
+    log_note 1 "$DEV_ALICE" "gcloud storage ls gs://$DEV_PROJECT-reports --impersonate-service-account=$DEV_ALICE   # (auto-solved)" ;;
+  inherit_allowed)
+    log_note 0 "$DEV_ALICE" "gcloud storage ls gs://$DEV_PROJECT-reports --impersonate-service-account=$DEV_ALICE   # (auto-solved)" ;;
+  inherit_cleaned)
+    for r in $(project_roles gdev "$DEV_PROJECT" "serviceAccount:$DEV_ALICE"); do
+      gdev projects remove-iam-policy-binding "$DEV_PROJECT" --member="serviceAccount:$DEV_ALICE" --role="$r" --all >/dev/null
+    done ;;
 esac
 exit 0

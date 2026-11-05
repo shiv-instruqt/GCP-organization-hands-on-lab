@@ -18,6 +18,7 @@ platform-admin ──(roles/iam.serviceAccountTokenCreator ON dev-alice)──�
 1. Allow **only** the dev `platform-admin` to impersonate `dev-alice` — grant on the `dev-alice` service account, not the project.
 2. As `dev-alice`, upload `hello.txt` to `$DEV_BUCKET` and list the bucket.
 3. As `dev-alice`, try at least one thing the role does **not** allow and confirm it is denied.
+4. Prove **inheritance**: a role granted on the *project* reaches a bucket that had no grant — then remove it again.
 
 ### Step 1 — Try impersonating before you are allowed to
 
@@ -85,6 +86,36 @@ gcloud storage buckets list --project="$DEV_PROJECT" --impersonate-service-accou
 ```
 
 Check `~/week1/commands.log`: each line shows `acting-as=dev-alice@…` and the exit code. That's your audit trail for the identity map.
+
+</details>
+
+### Step 5 — See IAM inheritance in action
+
+Create a second bucket `gs://<dev-project-id>-reports` (`$DEV_PROJECT-reports`). As `dev-alice`, try to list it (denied — her role is only on the app-data bucket). Then grant her `roles/storage.objectViewer` on the **project**, list it again (allowed — the project grant is **inherited** by every bucket), and finally **remove** the project-level grant again.
+
+<details>
+<summary>💡 Show step-by-step instructions</summary>
+
+```bash
+gcloud config configurations activate dev
+gcloud storage buckets create "gs://$DEV_PROJECT-reports" --location="$LAB_REGION" --uniform-bucket-level-access
+
+# 1. denied: dev-alice's role is granted on the OTHER bucket only
+gcloud storage ls "gs://$DEV_PROJECT-reports" --impersonate-service-account="$DEV_ALICE"
+
+# 2. grant on the PROJECT -> inherited by every bucket in it
+gcloud projects add-iam-policy-binding "$DEV_PROJECT" \
+  --member="serviceAccount:$DEV_ALICE" --role="roles/storage.objectViewer" --condition=None
+
+# 3. after ~60 s: allowed
+gcloud storage ls "gs://$DEV_PROJECT-reports" --impersonate-service-account="$DEV_ALICE"
+
+# 4. clean up - dev-alice must have NO project-level roles
+gcloud projects remove-iam-policy-binding "$DEV_PROJECT" \
+  --member="serviceAccount:$DEV_ALICE" --role="roles/storage.objectViewer" --all
+```
+
+One grant high up = access to **everything below it**, including buckets created later. That's why least privilege means granting at the **lowest** level that works.
 
 </details>
 

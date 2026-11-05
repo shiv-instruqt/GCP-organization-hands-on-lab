@@ -17,6 +17,15 @@ case "$CHECK" in
     log_ok_as "$DEV_ALICE" || fail "No successful gcloud command acting as $DEV_ALICE in commands.log." ;;
   impersonated_denied)
     log_denied_as "$DEV_ALICE" || fail "No denied command acting as $DEV_ALICE yet - try deleting hello.txt as dev-alice." ;;
+  inherit_denied)
+    grep -F "| acting-as=$DEV_ALICE |" "$LOG" 2>/dev/null | grep -E '\| exit=[1-9][0-9]* \|' | grep -Eq -- "-reports" \
+      || fail "No denied attempt by dev-alice to list gs://$DEV_PROJECT-reports in commands.log." ;;
+  inherit_allowed)
+    grep -F "| acting-as=$DEV_ALICE | exit=0 |" "$LOG" 2>/dev/null | grep -Eq -- "-reports" \
+      || fail "No successful listing of gs://$DEV_PROJECT-reports as dev-alice yet (grant on the project, wait ~60 s, retry)." ;;
+  inherit_cleaned)
+    r=$(project_roles gdev "$DEV_PROJECT" "serviceAccount:$DEV_ALICE" | xargs)
+    [ -z "$r" ] || fail "dev-alice still has project-level role(s): $r - remove them." ;;
   *) fail "Unknown check '$CHECK'" ;;
 esac
 exit 0

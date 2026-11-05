@@ -1,0 +1,44 @@
+slug: gcp-week1-organization-projects-identity
+type: track
+title: Week 1 — GCP Organization, Projects and Identity
+teaser: Build a small, secure multi-project foundation on Google Cloud by hand - hierarchy, APIs, IAM, service accounts, impersonation, IAM Conditions, org policies and a real access-denied failure drill.
+description: |-
+  You just joined the platform team at **Northwind Payments** (a fictional company). Two brand-new Google Cloud projects - **dev** and **staging** - have been vended for a new service. Nothing is set up yet.
+
+  In this track you will:
+
+  - explore the **resource hierarchy** (organization → folder → project), billing and project boundaries
+  - set up **one gcloud identity per project** and **enable APIs** with `gcloud`, documenting who did what
+  - compare **predefined vs custom roles** and build a least-privilege **developer** identity
+  - use **service account impersonation** instead of keys
+  - build a least-privilege **deployment pipeline** identity with a narrowly scoped `actAs`
+  - grant **time-bound, cross-project** access with **IAM Conditions**
+  - read **org policies** and **quotas**
+  - run a **failure drill**: remove a permission, diagnose it with **Policy Troubleshooter**, and compare a broad vs the narrowest fix
+
+  **Deliverable:** identity map, API enablement notes, CLI command log and a least-privilege table.
+
+  Every step tells you *what* to achieve - the exact commands are hidden until you open them.
+icon: ""
+tags:
+- gcp
+- iam
+- service-accounts
+- least-privilege
+- devops
+owner: instruqt
+developers:
+- shiv@instruqt.com
+idle_timeout: 1800
+timelimit: 10800
+extend_ttl: 1800
+skipping_enabled: true
+lab_config:
+  sidebar_enabled: true
+  feedback_recap_enabled: true
+  feedback_tab_enabled: false
+  loadingMessages: true
+  theme:
+    name: modern-dark
+  default_layout: AssignmentRight
+  default_layout_sidebar_size: 40

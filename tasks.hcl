@@ -357,6 +357,68 @@ resource "task" "t_impersonate_dev" {
     }
   }
 
+  condition "inherit_denied" {
+    description = "As dev-alice, listing the `-reports` bucket was DENIED (no grant on it yet)"
+
+    check {
+      script          = "scripts/t_impersonate_dev/check.sh"
+      failure_message = "Create gs://$DEV_PROJECT-reports and try to list it as dev-alice - it should be denied."
+
+      config {
+        environment = { CHECK = "inherit_denied" }
+      }
+    }
+
+    solve {
+      script = "scripts/t_impersonate_dev/solve.sh"
+
+      config {
+        environment = { CHECK = "inherit_denied" }
+      }
+    }
+  }
+
+  condition "inherit_allowed" {
+    description = "After a PROJECT-level grant, dev-alice listed the `-reports` bucket successfully (inheritance)"
+
+    check {
+      script          = "scripts/t_impersonate_dev/check.sh"
+      failure_message = "Grant dev-alice roles/storage.objectViewer on the dev project, wait ~60 s, then list gs://$DEV_PROJECT-reports as dev-alice."
+
+      config {
+        environment = { CHECK = "inherit_allowed" }
+      }
+    }
+
+    solve {
+      script = "scripts/t_impersonate_dev/solve.sh"
+
+      config {
+        environment = { CHECK = "inherit_allowed" }
+      }
+    }
+  }
+
+  condition "inherit_cleaned" {
+    description = "The project-level grant was removed again - dev-alice has no project roles"
+
+    check {
+      script          = "scripts/t_impersonate_dev/check.sh"
+      failure_message = "Remove dev-alice's project-level role(s) in dev again."
+
+      config {
+        environment = { CHECK = "inherit_cleaned" }
+      }
+    }
+
+    solve {
+      script = "scripts/t_impersonate_dev/solve.sh"
+
+      config {
+        environment = { CHECK = "inherit_cleaned" }
+      }
+    }
+  }
 }
 
 resource "task" "t_pipeline" {
