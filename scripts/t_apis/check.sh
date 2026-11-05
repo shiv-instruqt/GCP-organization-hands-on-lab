@@ -1,0 +1,33 @@
+#!/bin/bash
+# shellcheck disable=SC1091
+source /opt/lab/lib.sh 2>/dev/null || { echo "The lab environment is still being prepared - wait a minute and click Check again."; exit 1; }
+
+DEV_APIS="iamcredentials.googleapis.com policytroubleshooter.googleapis.com orgpolicy.googleapis.com"
+STG_APIS="iamcredentials.googleapis.com artifactregistry.googleapis.com run.googleapis.com orgpolicy.googleapis.com"
+
+missing() { # missing <gdev|gstg> <api...>
+  local fn=$1 enabled out=""; shift
+  enabled=$("$fn" services list --enabled --format="value(config.name)" 2>/dev/null)
+  for a in "$@"; do grep -qx "$a" <<< "$enabled" || out="$out $a"; done
+  echo "$out"
+}
+
+case "$CHECK" in
+  dev_apis)
+    # shellcheck disable=SC2086
+    m=$(missing gdev $DEV_APIS); [ -z "$m" ] || fail "Not enabled in dev:$m" ;;
+  staging_apis)
+    # shellcheck disable=SC2086
+    m=$(missing gstg $STG_APIS); [ -z "$m" ] || fail "Not enabled in staging:$m" ;;
+  api_notes)
+    f="$W1/02-api-enablement.md"
+    [ -f "$f" ] || fail "02-api-enablement.md not found."
+    for a in iamcredentials policytroubleshooter orgpolicy artifactregistry run.googleapis.com; do
+      grep -q "$a" "$f" || fail "02-api-enablement.md does not mention $a."
+    done
+    grep -q "platform-admin@" "$f" || fail "Add the identity (platform-admin email) that enabled each API."
+    no_todo "$f" || fail "02-api-enablement.md still contains _TODO_ placeholders."
+    ;;
+  *) fail "Unknown check '$CHECK'" ;;
+esac
+exit 0

@@ -1,0 +1,41 @@
+#!/bin/bash
+# shellcheck disable=SC1091
+source /opt/lab/lib.sh 2>/dev/null || { echo "The lab environment is still being prepared - wait a minute and click Check again."; exit 1; }
+
+mkcfg() { # mkcfg <name> <key-file> <account> <project>
+  gcloud config configurations describe "$1" >/dev/null 2>&1 || gcloud config configurations create "$1" --no-activate
+  gcloud --configuration="$1" auth activate-service-account --key-file="$2" --quiet
+  gcloud --configuration="$1" config set account "$3" --quiet
+  gcloud --configuration="$1" config set project "$4" --quiet
+  [ "$(cat /root/.config/gcloud/active_config 2>/dev/null)" = "default" ] && gcloud config configurations activate "$1" --quiet
+  true
+}
+
+case "$CHECK" in
+  dev_config)     mkcfg dev     /root/.keys/dev-platform-admin.json     "$DEV_ADMIN_SA"     "$DEV_PROJECT" ;;
+  staging_config) mkcfg staging /root/.keys/staging-platform-admin.json "$STAGING_ADMIN_SA" "$STAGING_PROJECT" ;;
+  hierarchy_notes)
+    dn=$(gdev projects describe "$DEV_PROJECT" --format="value(projectNumber)")
+    sn=$(gstg projects describe "$STAGING_PROJECT" --format="value(projectNumber)")
+    dp=$(gdev projects describe "$DEV_PROJECT" --format="value(parent.type,parent.id)")
+    sp=$(gstg projects describe "$STAGING_PROJECT" --format="value(parent.type,parent.id)")
+    cat > "$W1/01-hierarchy.md" <<NOTES
+# 01 — Resource hierarchy notes (auto-solved)
+
+| Project | Project ID | Project NUMBER | Parent (folder/org) |
+|---------|------------|----------------|---------------------|
+| dev     | $DEV_PROJECT | $dn | $dp |
+| staging | $STAGING_PROJECT | $sn | $sp |
+
+## Ancestors
+$(gdev projects get-ancestors "$DEV_PROJECT" 2>&1)
+
+## Billing
+Billing is linked by billing-account admins outside the project boundary; the platform-admin identity cannot read or change it.
+
+## gcloud projects create
+Denied: resourcemanager.projects.create is granted on folders/organizations, not on projects.
+NOTES
+    ;;
+esac
+exit 0
