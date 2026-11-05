@@ -60,7 +60,7 @@ gcloud config set project "$DEV_PROJECT"
 gcloud config list
 ```
 
-Your prompt should now show `[gcloud: dev | platform-admin]`.
+Your prompt should now show `[gcloud: dev | platform-admin-service-account]`.
 
 </details>
 

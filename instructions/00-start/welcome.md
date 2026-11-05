@@ -41,7 +41,7 @@ You opened a hint! Inside these blocks you'll find the exact commands and an exp
 - **Every `gcloud` command is logged automatically** to `~/week1/commands.log`, together with *which identity* ran it and whether it succeeded. Your prompt always shows the active identity:
 
 ```text
-[gcloud: dev | platform-admin] ~/week1 $
+[gcloud: dev | platform-admin-service-account] ~/week1 $
 ```
 
 ## Your identities in this lab

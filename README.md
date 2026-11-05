@@ -76,6 +76,11 @@ These points depend on platform behavior that can't be verified offline — plea
 - [ ] **Cross-project binding:** granting `dev-alice@<dev>` a role in staging is allowed (no `iam.allowedPolicyMemberDomains` restriction blocking service accounts).
 - [ ] **Skip / solve:** skipping each task passes all its checks (good smoke test of the whole lab).
 
+## Known platform gotchas (found on the first run, 5 Nov 2026)
+
+- **Don't use list-valued `local` blocks** for `services` or `roles` in `google_project`. They pass `instruqt lab validate` but reach the provisioner empty: logs show `services not requested`, `role_count: 0`, then `SetGoogleProjectOrgPolicy constraints/gcp.restrictServiceUsage allowed_value_count: 0 → Error 400`, and the lab fails. Lists are now inline in `sandbox.hcl`.
+- A `service_account "platform-admin"` block becomes `platform-admin-service-account@<project>.iam.gserviceaccount.com` (Instruqt appends `-service-account`; the 30-character account-ID limit means a longer label would break). Scripts always use `.service_account.0.email`, so nothing is hard-coded.
+
 ## Notes for maintainers
 
 - Check scripts use a **private gcloud config** (`/opt/lab/gcloud`) so learners can't break validation by changing their own configuration.

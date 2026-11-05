@@ -25,7 +25,7 @@ case "$CHECK" in
     for a in iamcredentials policytroubleshooter orgpolicy artifactregistry run.googleapis.com; do
       grep -q "$a" "$f" || fail "02-api-enablement.md does not mention $a."
     done
-    grep -q "platform-admin@" "$f" || fail "Add the identity (platform-admin email) that enabled each API."
+    grep -qE "platform-admin[a-z-]*@" "$f" || fail "Add the identity (platform-admin email) that enabled each API."
     no_todo "$f" || fail "02-api-enablement.md still contains _TODO_ placeholders."
     ;;
   *) fail "Unknown check '$CHECK'" ;;
