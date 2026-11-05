@@ -1,0 +1,21 @@
+slug: untitled-track-c0xgve
+id: vdglrsutzuas
+revision: 1
+title: Untitled Track
+description: ""
+icon: ""
+tags: []
+owner: instruqt-support
+developers:
+- shiv@instruqt.com
+instructors: []
+idle_timeout: 300
+timelimit: 1200
+lab_config:
+  extend_ttl: 0
+  sidebar_enabled: true
+  hideStopButton: false
+  feedback_recap_enabled: true
+  feedback_tab_enabled: false
+  loadingMessages: true
+enhanced_loading: null
